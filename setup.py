@@ -164,18 +164,22 @@ def build_package():
       # pkg_resources is deprecated in setuptools >= 81
       # ecdev_location = os.path.join(pkg_resources.get_distribution("ecdev").location, 'ecdev')
       ecdev_location = os.path.join(distribution("ecdev").locate_file(""), "ecdev")
+      cscql2_location = os.path.join(distribution("cscql2").locate_file(""), "cscql2")
       sdkOption = 'EC_SDK_SRC=' + ecdev_location.replace('\\', '/')
 
       binsPath = os.path.join(ecdev_location, 'bin', '')
       libsPath = os.path.join(ecdev_location, dll_dir, '')
+      cql2LibsPath = os.path.join(cscql2_location, dll_dir, '')
       if platform_str == 'win32':
          binsPath = binsPath.replace(os.sep, '/') # crossplatform.mk expects POSIX paths
          libsPath = libsPath.replace(os.sep, '/')
+         cql2LibsPath = cql2LibsPath.replace(os.sep, '/')
       binsOption = 'EC_BINS=' + binsPath
-      ldFlags = 'LDFLAGS=-L' + libsPath
+      ldFlags = 'LDFLAGS=-L' + libsPath + ' -L' + cql2LibsPath
       set_library_path(env, os.path.join(ecdev_location, 'bin' if platform_str == 'win32' else 'lib'))
+      set_library_path(env, os.path.join(cscql2_location, 'bin' if platform_str == 'win32' else 'lib'))
       if not os.path.exists(artifacts_dir):
-         make_and_args = [make_cmd, f'-j{cpu_count}', 'SKIP_SONAME=y', 'ENABLE_PYTHON_RPATHS=y', 'DISABLED_STATIC_BUILDS=y', sdkOption, binsOption, ldFlags]
+         make_and_args = [make_cmd, f'-j{cpu_count}', 'SKIP_SONAME=y', 'V=1', 'ENABLE_PYTHON_RPATHS=y', 'DISABLED_STATIC_BUILDS=y', sdkOption, binsOption, ldFlags]
          if cc_override is not None:
             make_and_args.extend(cc_override)
          subprocess.check_call(make_and_args, env=env, cwd=cartosym_dir)
@@ -187,11 +191,12 @@ def build_package():
 
          prepare_package_dir([
             (os.path.join(lib_dir, dll_prefix + 'CartoSym' + dll_ext), os.path.join(dll_dir, dll_prefix + 'CartoSym' + dll_ext)),
-            (os.path.join(lib_dir, dll_prefix + 'CQL2' + dll_ext), os.path.join(dll_dir, dll_prefix + 'CQL2' + dll_ext)),
-            (os.path.join(lib_dir, dll_prefix + 'DE9IM' + dll_ext), os.path.join(dll_dir, dll_prefix + 'DE9IM' + dll_ext)),
-            (os.path.join(lib_dir, dll_prefix + 'SFCollections' + dll_ext), os.path.join(dll_dir, dll_prefix + 'SFCollections' + dll_ext)),
-            (os.path.join(lib_dir, dll_prefix + 'SFGeometry' + dll_ext), os.path.join(dll_dir, dll_prefix + 'SFGeometry' + dll_ext)),
-            (os.path.join(lib_dir, dll_prefix + 'GeoExtents' + dll_ext), os.path.join(dll_dir, dll_prefix + 'GeoExtents' + dll_ext)),
+            #(os.path.join(lib_dir, dll_prefix + 'CQL2' + dll_ext), os.path.join(dll_dir, dll_prefix + 'CQL2' + dll_ext)),
+            #(os.path.join(lib_dir, dll_prefix + 'DE9IM' + dll_ext), os.path.join(dll_dir, dll_prefix + 'DE9IM' + dll_ext)),
+            #(os.path.join(lib_dir, dll_prefix + 'SFCollections' + dll_ext), os.path.join(dll_dir, dll_prefix + 'SFCollections' + dll_ext)),
+            #(os.path.join(lib_dir, dll_prefix + 'SFGeometry' + dll_ext), os.path.join(dll_dir, dll_prefix + 'SFGeometry' + dll_ext)),
+            #(os.path.join(lib_dir, dll_prefix + 'GeoExtents' + dll_ext), os.path.join(dll_dir, dll_prefix + 'GeoExtents' + dll_ext)),
+
             #(os.path.join(lib_dir, dll_prefix + 'cartosym_c' + dll_ext), os.path.join(dll_dir, dll_prefix + 'cartosym_c' + dll_ext)),
             #(os.path.join(cartosym_dir, 'obj', 'static.' + platform_str, 'libcartosymStatic.a'), os.path.join('lib', 'libcartosymStatic.a')),
             #(os.path.join(cartosym_py_dir, 'cartosym.py'), 'cartosym.py'),
@@ -220,11 +225,11 @@ class egg_info_with_build(egg_info):
 
 lib_files = [
    dll_prefix + 'CartoSym' + dll_ext,
-   dll_prefix + 'CQL2' + dll_ext,
-   dll_prefix + 'DE9IM' + dll_ext,
-   dll_prefix + 'SFCollections' + dll_ext,
-   dll_prefix + 'SFGeometry' + dll_ext,
-   dll_prefix + 'GeoExtents' + dll_ext,
+   #dll_prefix + 'CQL2' + dll_ext,
+   #dll_prefix + 'DE9IM' + dll_ext,
+   #dll_prefix + 'SFCollections' + dll_ext,
+   #dll_prefix + 'SFGeometry' + dll_ext,
+   #dll_prefix + 'GeoExtents' + dll_ext,
 
    #dll_prefix + 'CartoSym_c' + dll_ext,
 ]
@@ -274,27 +279,27 @@ else:
    }
    package_data={
       'cartosym': [ 'cartosym.py' ],
-      'cartosym.bin': ['cs-canif' + exe_ext, 'dgg_wrapper.py'],
+      'cartosym.bin': ['cs-canif' + exe_ext, 'cs_canif_wrapper.py'],
       'cartosym.lib': [ ], #'libcartosymStatic.a'],
       #'cartosym.examples': ['demo.py'],
    }
    if platform_str == 'win32':
       package_data['cartosym.bin'].append(dll_prefix + 'CartoSym' + dll_ext)
-      package_data['cartosym.bin'].append(dll_prefix + 'CQL2' + dll_ext)
-      package_data['cartosym.bin'].append(dll_prefix + 'DE9IM' + dll_ext)
-      package_data['cartosym.bin'].append(dll_prefix + 'SFCollections' + dll_ext)
-      package_data['cartosym.bin'].append(dll_prefix + 'SFGeometry' + dll_ext)
-      package_data['cartosym.bin'].append(dll_prefix + 'GeoExtents' + dll_ext)
+      #package_data['cartosym.bin'].append(dll_prefix + 'CQL2' + dll_ext)
+      #package_data['cartosym.bin'].append(dll_prefix + 'DE9IM' + dll_ext)
+      #package_data['cartosym.bin'].append(dll_prefix + 'SFCollections' + dll_ext)
+      #package_data['cartosym.bin'].append(dll_prefix + 'SFGeometry' + dll_ext)
+      #package_data['cartosym.bin'].append(dll_prefix + 'GeoExtents' + dll_ext)
 
    else:
       packages.append('cartosym.lib')
       package_dir['cartosym.lib'] = os.path.join(artifacts_dir, 'lib')
       package_data['cartosym.lib'].append(dll_prefix + 'CartoSym' + dll_ext)
-      package_data['cartosym.lib'].append(dll_prefix + 'CQL2' + dll_ext)
-      package_data['cartosym.lib'].append(dll_prefix + 'DE9IM' + dll_ext)
-      package_data['cartosym.lib'].append(dll_prefix + 'SFCollections' + dll_ext)
-      package_data['cartosym.lib'].append(dll_prefix + 'SFGeometry' + dll_ext)
-      package_data['cartosym.lib'].append(dll_prefix + 'GeoExtents' + dll_ext)
+      #package_data['cartosym.lib'].append(dll_prefix + 'CQL2' + dll_ext)
+      #package_data['cartosym.lib'].append(dll_prefix + 'DE9IM' + dll_ext)
+      #package_data['cartosym.lib'].append(dll_prefix + 'SFCollections' + dll_ext)
+      #package_data['cartosym.lib'].append(dll_prefix + 'SFGeometry' + dll_ext)
+      #package_data['cartosym.lib'].append(dll_prefix + 'GeoExtents' + dll_ext)
 
    cmdclass={'build': build_with_make, 'egg_info': egg_info_with_build, 'bdist_wheel': setplatname_bdist_wheel }
    if sys.platform.startswith('win'):
@@ -308,7 +313,7 @@ setup(
     #cffi_modules=cffi_modules,
     # setup_requires is deprecated -- build dependencies must now be specified in pyproject.toml
     #setup_requires=['setuptools', 'ecdev >= 0.0.5post1', 'cffi >= 1.0.0'],
-    install_requires=['ecrt >= 0.0.5', 'cffi >= 1.0.0'],
+    install_requires=['ecrt >= 0.0.5', 'cscql2 >= 0.0.1', 'cffi >= 1.0.0'],
     packages=packages,
     package_dir=package_dir,
     package_data=package_data,
@@ -316,14 +321,14 @@ setup(
     ext_modules=[],
     cmdclass=cmdclass,
     entry_points={ 'console_scripts': [ 'cs-canif=cartosym.bin.cs_canif_wrapper:main' ] },
-    description='libCartoSym (An implementation of OGC Cartographic Symbology 2.0, CQL2, Simple Features and DE9-IM)',
+    description='libCartoSym (An implementation of OGC Cartographic Symbology 2.0)',
     url='https://cartosym.org',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Jérôme Jacovella-St-Louis, Ecere Corporation',
     author_email='jerome@ecere.com',
     license='BSD-3-Clause',
-    keywords='symbology portrayal styles cartosym cartosym-css cartosym-json ogc ogc-api gnosis cql2 de9im simple-features geojson wkt wkb spatial-relations',
+    keywords='symbology portrayal styles cartosym cartosym-css cartosym-json ogc ogc-api gnosis',
     classifiers=[
          'Development Status :: 4 - Beta',
          'Environment :: Console',

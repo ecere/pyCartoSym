@@ -64,7 +64,7 @@ jobs:
             # since commands are executed in a UNIX-like shell expecting 'mkdir -p'
             CIBW_ENVIRONMENT: 'MSYSCON=y PIP_FIND_LINKS="https://pypi.org/simple/ecrt https://pypi.org/simple/ecdev"'
             CIBW_BUILD_VERBOSITY: 1
-            CIBW_REPAIR_WHEEL_COMMAND_LINUX: 'auditwheel repair -w {dest_dir} {wheel} --exclude libecrt.so'
+            CIBW_REPAIR_WHEEL_COMMAND_LINUX: 'auditwheel repair -w {dest_dir} {wheel} --exclude libecrt.so --exclude libCQL2.so --exclude libDE9IM.so --exclude libSFCollections.so --exclude libSFGeometry.so --exclude libGeoExtents.so'
             # CIBW_REPAIR_WHEEL_COMMAND_MACOS: 'delocate-wheel -w {dest_dir} -v {wheel}'
             CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
               sh -c '
