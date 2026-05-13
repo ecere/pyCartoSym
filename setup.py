@@ -29,7 +29,7 @@ if sys.platform.startswith("win") and sys.version_info[:2] == (3, 6):
    import distutils.cygwinccompiler
    distutils.cygwinccompiler.get_msvcr = lambda: [] # ["msvcr140"] -- we're building with MinGW-w64
 
-pkg_version = '0.0.1'
+pkg_version = '0.0.2rc1'
 
 #try:
 #    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
@@ -313,7 +313,7 @@ setup(
     #cffi_modules=cffi_modules,
     # setup_requires is deprecated -- build dependencies must now be specified in pyproject.toml
     #setup_requires=['setuptools', 'ecdev >= 0.0.5post1', 'cffi >= 1.0.0'],
-    install_requires=['ecrt >= 0.0.5', 'cscql2 >= 0.0.1', 'cffi >= 1.0.0'],
+    install_requires=['ecrt >= 0.0.5', 'cscql2 >= 0.0.2rc1', 'cffi >= 1.0.0'],
     packages=packages,
     package_dir=package_dir,
     package_data=package_data,
